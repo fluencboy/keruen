@@ -1,6 +1,8 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
+from contextlib import asynccontextmanager
+import asyncio
 import os
 
 from app.core.config import settings
@@ -10,11 +12,36 @@ from app.api.routes import (
     analytics, users, dashboard, websocket
 )
 
+async def run_seed_if_empty():
+    """Seed database in background if orders table is empty."""
+    await asyncio.sleep(5)  # Let uvicorn fully start first
+    try:
+        from app.db.database import SessionLocal
+        from app.models import Order
+        db = SessionLocal()
+        try:
+            count = db.query(Order).count()
+        finally:
+            db.close()
+        if count == 0:
+            print("Orders table empty — running seed in background...")
+            from app.db.seed import seed_database
+            await asyncio.get_event_loop().run_in_executor(None, seed_database)
+            print("Background seed complete.")
+    except Exception as e:
+        print(f"Background seed error (non-fatal): {e}")
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    asyncio.create_task(run_seed_if_empty())
+    yield
+
 app = FastAPI(
     title="Keruen API",
     description="Digital Logistics Control Center for Mangystau Region",
     version="1.0.0",
     redirect_slashes=False,
+    lifespan=lifespan,
 )
 
 app.add_middleware(

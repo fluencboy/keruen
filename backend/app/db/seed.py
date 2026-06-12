@@ -61,11 +61,19 @@ def seed_database():
     db: Session = SessionLocal()
 
     try:
-        if db.query(User).count() > 10:
-            print("Database already seeded, skipping.")
+        if db.query(Order).count() > 0:
+            print("Database already has orders, skipping seed.")
             return
 
-        print("Seeding database...")
+        print("Seeding database — clearing existing data first...")
+        from sqlalchemy import text
+        # Clear in FK-safe order
+        for tbl in ['events', 'audit_logs', 'simulations', 'predictions',
+                    'transit_statistics', 'weather_conditions', 'notifications',
+                    'slots', 'orders', 'vehicles', 'checkpoints', 'users']:
+            db.execute(text(f'TRUNCATE TABLE {tbl} RESTART IDENTITY CASCADE'))
+        db.commit()
+        print("Cleared. Seeding fresh data...")
 
         # ---- Users ----
         print("Creating users...")
@@ -250,7 +258,7 @@ def seed_database():
             db.add(o)
             orders.append(o)
 
-            if i % 500 == 0:
+            if i % 100 == 0:
                 print(f"  {i}/5000 orders created...")
                 db.commit()
 
