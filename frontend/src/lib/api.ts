@@ -17,10 +17,14 @@ api.interceptors.request.use((config) => {
 api.interceptors.response.use(
   (response) => response,
   (error) => {
+    // Only logout on 401 from auth endpoints, not from redirected API calls
     if (error.response?.status === 401 && typeof window !== 'undefined') {
-      localStorage.removeItem('kt_token')
-      localStorage.removeItem('kt_user')
-      window.location.href = '/login'
+      const url = error.config?.url || ''
+      if (url.includes('/api/auth/')) {
+        localStorage.removeItem('kt_token')
+        localStorage.removeItem('kt_user')
+        window.location.href = '/login'
+      }
     }
     return Promise.reject(error)
   }
@@ -47,7 +51,7 @@ export const dashboardApi = {
 
 // Orders
 export const ordersApi = {
-  list: (params?: any) => api.get('/api/orders', { params }),
+  list: (params?: any) => api.get('/api/orders/', { params }),
   get: (id: number) => api.get(`/api/orders/${id}`),
   create: (data: any) => api.post('/api/orders', data),
   update: (id: number, data: any) => api.put(`/api/orders/${id}`, data),
@@ -99,7 +103,7 @@ export const eventsApi = {
 
 // Predictions
 export const predictionsApi = {
-  list: (checkpointId?: number) => api.get('/api/predictions', { params: { checkpoint_id: checkpointId } }),
+  list: (checkpointId?: number) => api.get('/api/predictions/', { params: { checkpoint_id: checkpointId } }),
   refresh: () => api.get('/api/predictions/refresh'),
   forCheckpoint: (id: number, params?: any) => api.get(`/api/predictions/checkpoint/${id}`, { params }),
 }
