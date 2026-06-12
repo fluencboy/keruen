@@ -1,0 +1,22 @@
+services:
+  - type: web
+    name: keruen-backend
+    runtime: docker
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: keruen-db
+          property: connectionString
+      - key: SECRET_KEY
+        value: super-secret-key-keruen-2024-production
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: CORS_ORIGINS
+        value: '["https://keruen-delta.vercel.app","https://keruen.vercel.app"]'
+
+databases:
+  - name: keruen-db
+    databaseName: kaspitransit
+    user: kaspitransit

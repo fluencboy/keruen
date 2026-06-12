@@ -1,0 +1,131 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 222 47% 6%;
+    --foreground: 210 40% 98%;
+    --card: 222 47% 8%;
+    --card-foreground: 210 40% 98%;
+    --popover: 222 47% 8%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 199 89% 48%;
+    --primary-foreground: 222 47% 6%;
+    --secondary: 217 33% 17%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 217 33% 14%;
+    --muted-foreground: 215 20% 65%;
+    --accent: 217 33% 17%;
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 217 33% 17%;
+    --input: 217 33% 17%;
+    --ring: 199 89% 48%;
+    --radius: 0.5rem;
+  }
+}
+
+@layer base {
+  * { @apply border-border; }
+  body { @apply bg-background text-foreground; }
+  h1, h2, h3, h4, h5, h6 { @apply font-display; }
+}
+
+/* KaspiTransit custom utilities */
+@layer utilities {
+  .kt-card {
+    @apply bg-slate-900/80 border border-slate-700/50 rounded-xl backdrop-blur-sm;
+  }
+  .kt-card-inner {
+    @apply bg-slate-800/60 border border-slate-700/40 rounded-lg;
+  }
+  .kt-glow-blue {
+    box-shadow: 0 0 20px rgba(14, 165, 233, 0.15);
+  }
+  .kt-glow-green {
+    box-shadow: 0 0 20px rgba(16, 185, 129, 0.15);
+  }
+  .kt-text-mono {
+    @apply font-mono text-sm;
+  }
+  .kt-label {
+    @apply text-xs font-medium text-slate-400 uppercase tracking-wider;
+  }
+  .kt-value {
+    @apply text-2xl font-display font-bold text-white;
+  }
+  .scrollbar-thin {
+    scrollbar-width: thin;
+    scrollbar-color: rgb(51 65 85) transparent;
+  }
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 4px;
+  }
+  .scrollbar-thin::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    background-color: rgb(51 65 85);
+    border-radius: 2px;
+  }
+}
+
+/* Leaflet map dark theme */
+.leaflet-container {
+  background: #0F172A !important;
+}
+.leaflet-tile-pane {
+  filter: brightness(0.7) saturate(0.6) hue-rotate(195deg);
+}
+.leaflet-popup-content-wrapper {
+  background: #1E293B !important;
+  color: #f1f5f9 !important;
+  border: 1px solid #334155 !important;
+  border-radius: 8px !important;
+}
+.leaflet-popup-tip {
+  background: #1E293B !important;
+}
+
+/* Animated gradient border */
+.kt-gradient-border {
+  position: relative;
+  background: linear-gradient(135deg, #0EA5E9, #06B6D4, #8B5CF6);
+  border-radius: 12px;
+  padding: 1px;
+}
+.kt-gradient-border > * {
+  background: #0F172A;
+  border-radius: 11px;
+}
+
+/* Status badge pulse */
+.status-pulse {
+  animation: statusPulse 2s ease-in-out infinite;
+}
+@keyframes statusPulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+
+/* Live indicator */
+.live-dot {
+  animation: livePulse 1.5s ease-in-out infinite;
+}
+@keyframes livePulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.3); opacity: 0.8; }
+}
+
+/* Chart tooltip */
+.recharts-tooltip-wrapper .recharts-default-tooltip {
+  background: #1E293B !important;
+  border: 1px solid #334155 !important;
+  border-radius: 8px !important;
+  color: #f1f5f9 !important;
+}
+
+/* Smooth transitions */
+* { transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform; transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1); transition-duration: 150ms; }

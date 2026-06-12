@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(cat /tmp/backend.log | tail -30)",
+      "Read(//private/tmp/**)"
+    ]
+  }
+}
