@@ -67,11 +67,11 @@ def seed_database():
 
         print("Seeding database — clearing existing data first...")
         from sqlalchemy import text
-        # Clear in FK-safe order
-        for tbl in ['events', 'audit_logs', 'simulations', 'predictions',
-                    'transit_statistics', 'weather_conditions', 'notifications',
-                    'slots', 'orders', 'vehicles', 'checkpoints', 'users']:
-            db.execute(text(f'TRUNCATE TABLE {tbl} RESTART IDENTITY CASCADE'))
+        db.execute(text(
+            'TRUNCATE TABLE events, audit_logs, simulations, predictions, '
+            'transit_statistics, weather_conditions, notifications, slots, '
+            'orders, vehicles, checkpoints, users RESTART IDENTITY CASCADE'
+        ))
         db.commit()
         print("Cleared. Seeding fresh data...")
 
