@@ -45,6 +45,19 @@ def random_booking_number():
 
 def seed_database():
     Base.metadata.create_all(bind=engine)
+
+    # Pre-compute all bcrypt hashes BEFORE opening DB connection
+    # to avoid SSL timeout during slow hashing
+    print("Pre-computing password hashes...")
+    hash_admin = get_password_hash("admin123")
+    hash_operator = get_password_hash("operator123")
+    hash_analyst = get_password_hash("analyst123")
+    hash_shipper = get_password_hash("shipper123")
+    hash_driver = get_password_hash("driver123")
+
+    # Dispose engine so we get a fresh connection after hashing
+    engine.dispose()
+
     db: Session = SessionLocal()
 
     try:
@@ -57,9 +70,9 @@ def seed_database():
         # ---- Users ----
         print("Creating users...")
         admin = User(
-            email="admin@kaspitransit.kz",
+            email="admin@keruen.kz",
             full_name="Akimat Administrator",
-            hashed_password=get_password_hash("admin123"),
+            hashed_password=hash_admin,
             role="admin",
             company="Mangystau Akimat",
             phone="+7 7292 100000"
@@ -67,19 +80,19 @@ def seed_database():
         db.add(admin)
 
         operator = User(
-            email="operator@kaspitransit.kz",
+            email="operator@keruen.kz",
             full_name="Logistics Operator",
-            hashed_password=get_password_hash("operator123"),
+            hashed_password=hash_operator,
             role="operator",
-            company="KaspiTransit Operations",
+            company="Keruen Operations",
             phone="+7 7292 200000"
         )
         db.add(operator)
 
         analyst = User(
-            email="analyst@kaspitransit.kz",
+            email="analyst@keruen.kz",
             full_name="Regional Analyst",
-            hashed_password=get_password_hash("analyst123"),
+            hashed_password=hash_analyst,
             role="analyst",
             company="Mangystau Akimat Analytics",
             phone="+7 7292 300000"
@@ -87,9 +100,9 @@ def seed_database():
         db.add(analyst)
 
         shipper = User(
-            email="shipper@kaspitransit.kz",
+            email="shipper@keruen.kz",
             full_name="Cargo Shipper",
-            hashed_password=get_password_hash("shipper123"),
+            hashed_password=hash_shipper,
             role="shipper",
             company="KazMunayGaz Logistics",
             phone="+7 7292 400000"
@@ -97,9 +110,9 @@ def seed_database():
         db.add(shipper)
 
         driver = User(
-            email="driver@kaspitransit.kz",
+            email="driver@keruen.kz",
             full_name="Truck Driver",
-            hashed_password=get_password_hash("driver123"),
+            hashed_password=hash_driver,
             role="driver",
             company="TransLogistica KZ",
             phone="+7 7292 500000"
@@ -114,9 +127,9 @@ def seed_database():
         extra_shippers = []
         for i in range(20):
             u = User(
-                email=f"shipper{i+2}@kaspitransit.kz",
+                email=f"shipper{i+2}@keruen.kz",
                 full_name=f"Shipper {i+2}",
-                hashed_password=get_password_hash("shipper123"),
+                hashed_password=hash_shipper,
                 role="shipper",
                 company=random.choice(companies),
                 phone=f"+7 7292 {500000+i}"
@@ -127,9 +140,9 @@ def seed_database():
         extra_drivers = []
         for i in range(50):
             u = User(
-                email=f"driver{i+2}@kaspitransit.kz",
+                email=f"driver{i+2}@keruen.kz",
                 full_name=f"Driver {i+2}",
-                hashed_password=get_password_hash("driver123"),
+                hashed_password=hash_driver,
                 role="driver",
                 company=random.choice(companies),
                 phone=f"+7 7292 {600000+i}"
@@ -137,7 +150,7 @@ def seed_database():
             db.add(u)
             extra_drivers.append(u)
 
-        db.flush()
+        db.commit()
 
         # ---- Checkpoints ----
         print("Creating checkpoints...")
@@ -158,7 +171,7 @@ def seed_database():
             )
             db.add(c)
             checkpoints.append(c)
-        db.flush()
+        db.commit()
 
         # ---- Vehicles ----
         print("Creating 1000 vehicles...")
@@ -182,7 +195,7 @@ def seed_database():
             )
             db.add(v)
             vehicles.append(v)
-        db.flush()
+        db.commit()
 
         # ---- Orders (5000) ----
         print("Creating 5000 orders...")
@@ -239,9 +252,9 @@ def seed_database():
 
             if i % 500 == 0:
                 print(f"  {i}/5000 orders created...")
-                db.flush()
+                db.commit()
 
-        db.flush()
+        db.commit()
 
         # ---- Slots (for recent orders) ----
         print("Creating slots...")
@@ -264,7 +277,7 @@ def seed_database():
                         expires_at=slot_time + timedelta(hours=2)
                     )
                     db.add(s)
-        db.flush()
+        db.commit()
 
         # Generate future available slots
         now = datetime.utcnow()
@@ -284,7 +297,7 @@ def seed_database():
                                 expires_at=slot_time + timedelta(hours=2)
                             )
                             db.add(s)
-        db.flush()
+        db.commit()
 
         # ---- Notifications ----
         print("Creating notifications...")
@@ -306,7 +319,7 @@ def seed_database():
                 related_order_id=order.id
             )
             db.add(n)
-        db.flush()
+        db.commit()
 
         # ---- Events (live feed) ----
         print("Creating events...")
@@ -339,7 +352,7 @@ def seed_database():
                 created_at=datetime.utcnow() - timedelta(minutes=random.randint(0, 10080))
             )
             db.add(e)
-        db.flush()
+        db.commit()
 
         # ---- Weather Conditions ----
         print("Creating weather data...")
@@ -356,7 +369,7 @@ def seed_database():
                     recorded_at=dt
                 )
                 db.add(w)
-        db.flush()
+        db.commit()
 
         # ---- Transit Statistics ----
         print("Creating transit statistics (120 days)...")
@@ -377,9 +390,9 @@ def seed_database():
                     )
                     db.add(ts)
             if days_ago % 30 == 0:
-                db.flush()
+                db.commit()
 
-        db.flush()
+        db.commit()
 
         # ---- Predictions ----
         print("Creating initial predictions...")
@@ -395,7 +408,7 @@ def seed_database():
                 created_at=datetime.utcnow()
             )
             db.add(p)
-        db.flush()
+        db.commit()
 
         # ---- Simulations ----
         print("Creating simulation templates...")
