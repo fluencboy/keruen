@@ -13,7 +13,8 @@ from app.api.routes import (
 app = FastAPI(
     title="Keruen API",
     description="Digital Logistics Control Center for Mangystau Region",
-    version="1.0.0"
+    version="1.0.0",
+    redirect_slashes=False,
 )
 
 app.add_middleware(

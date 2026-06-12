@@ -1,5 +1,5 @@
 'use client'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/lib/auth'
 
@@ -16,8 +16,25 @@ export default function LoginPage() {
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [loadingSeconds, setLoadingSeconds] = useState(0)
   const { login } = useAuth()
   const router = useRouter()
+
+  useEffect(() => {
+    let interval: ReturnType<typeof setInterval>
+    if (loading) {
+      setLoadingSeconds(0)
+      interval = setInterval(() => setLoadingSeconds(s => s + 1), 1000)
+    }
+    return () => clearInterval(interval)
+  }, [loading])
+
+  const getLoadingMessage = () => {
+    if (loadingSeconds < 5) return 'Signing in...'
+    if (loadingSeconds < 15) return 'Connecting to server...'
+    if (loadingSeconds < 30) return 'Server is warming up...'
+    return 'Almost there, please wait...'
+  }
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -27,7 +44,7 @@ export default function LoginPage() {
       await login(email, password)
       router.push('/')
     } catch (err: any) {
-      setError(err.response?.data?.detail || 'Login failed')
+      setError(err.response?.data?.detail || err.code === 'ECONNABORTED' ? 'Server is starting up, please try again in 30 seconds' : 'Login failed')
     } finally {
       setLoading(false)
     }
@@ -42,7 +59,7 @@ export default function LoginPage() {
       await login(acc.email, acc.password)
       router.push('/')
     } catch (err: any) {
-      setError(err.response?.data?.detail || 'Login failed')
+      setError(err.response?.data?.detail || err.code === 'ECONNABORTED' ? 'Server is starting up, please try again in 30 seconds' : 'Login failed')
     } finally {
       setLoading(false)
     }
@@ -108,8 +125,21 @@ export default function LoginPage() {
               disabled={loading}
               className="w-full bg-gradient-to-r from-kt-blue to-kt-teal hover:from-blue-500 hover:to-cyan-400 text-white font-semibold py-2.5 rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {loading ? 'Signing in...' : 'Sign In'}
+              {loading ? (
+                <span className="flex items-center justify-center gap-2">
+                  <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+                  </svg>
+                  {getLoadingMessage()}
+                </span>
+              ) : 'Sign In'}
             </button>
+            {loading && loadingSeconds >= 5 && (
+              <p className="text-xs text-slate-500 text-center">
+                First request wakes up the server (~30s on free tier)
+              </p>
+            )}
           </form>
         </div>
 
