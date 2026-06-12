@@ -130,7 +130,7 @@ def upgrade() -> None:
         sa.Column('checkpoint_id', sa.Integer(), sa.ForeignKey('checkpoints.id')),
         sa.Column('order_id', sa.Integer(), sa.ForeignKey('orders.id')),
         sa.Column('severity', sa.String(), server_default='info'),
-        sa.Column('metadata', sa.JSON()),
+        sa.Column('event_metadata', sa.JSON()),
         sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('now()')),
         sa.PrimaryKeyConstraint('id')
     )
