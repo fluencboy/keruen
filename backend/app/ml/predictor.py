@@ -79,7 +79,7 @@ def generate_training_data(n_samples: int = 50000) -> pd.DataFrame:
 
 def train_models():
     print("Training ML prediction models...")
-    df = generate_training_data(50000)
+    df = generate_training_data(10000)
 
     features = ["checkpoint_enc", "weekday", "hour", "weather_enc", "slot_load", "cargo_enc"]
     X = df[features]
@@ -88,14 +88,12 @@ def train_models():
     for target in ["wait_time", "congestion", "risk_score"]:
         y = df[target]
         X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
-        rf = RandomForestRegressor(n_estimators=100, max_depth=10, random_state=42, n_jobs=-1)
+        rf = RandomForestRegressor(n_estimators=30, max_depth=8, random_state=42, n_jobs=1)
         rf.fit(X_train, y_train)
-        score = rf.score(X_test, y_test)
-        print(f"  {target}: R²={score:.3f}")
         models[target] = rf
 
     joblib.dump(models, MODEL_PATH)
-    print(f"Models saved to {MODEL_PATH}")
+    print("ML models trained and saved.")
     return models
 
 def load_or_train() -> Dict:
@@ -172,8 +170,4 @@ def predict_all_checkpoints(db_session=None) -> List[Dict]:
         results.append(result)
     return results
 
-# Pre-train on startup
-try:
-    get_models()
-except Exception as e:
-    print(f"Warning: Could not load/train ML models: {e}")
+# Models are lazy-loaded on first prediction request, not at import time
